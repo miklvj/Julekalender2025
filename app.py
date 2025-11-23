@@ -121,11 +121,11 @@ app.layout = html.Div(
                         ]),
 
                         html.Div([
-                            html.Label("Ekspert", style={"fontWeight": "bold"}),
+                            html.Label("Connoisseur", style={"fontWeight": "bold"}),
                             dcc.Dropdown(
                                 id='navn-input',
                                 options=[{'label': str(x), 'value': x} for x in Navn],
-                                placeholder='Vælg ekspert',
+                                placeholder='Vælg connoisseur',
                                 style={"marginBottom": "12px"}
                             ),
                         ]),
@@ -306,9 +306,7 @@ app.layout = html.Div(
 
                                 html.Div(
                                     style={"maxWidth": "250px", "marginBottom": "10px"},
-                                    children=[
-                                        html.Label("Vælg øl connoisseur",
-                                                   style={"fontWeight": "bold"}),
+                                    children=[                                    
                                         dcc.Dropdown(
                                             id='navn-filter',
                                             options=[{'label': str(x), 'value': x} for x in Navn],
