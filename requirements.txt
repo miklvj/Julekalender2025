@@ -1,1 +1,4 @@
 flask
+dash
+pandas
+plotly
