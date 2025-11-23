@@ -338,9 +338,6 @@ def add_row(n_clicks, current_rows, dato,
 
 return rows
 
-    return rows
-
-
 # --- Graph 1: Total rating ---
 @app.callback(
     Output('samlede_rating', 'figure'),
