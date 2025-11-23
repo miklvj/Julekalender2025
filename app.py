@@ -333,8 +333,10 @@ def add_row(n_clicks, current_rows, dato,
 
     rows.append(new_row)
 
-    df = pd.DataFrame(rows)
-    print(df)
+    df = pd.DataFrame(rows, columns=COLUMNS)
+    save_data(df)   
+
+return rows
 
     return rows
 
