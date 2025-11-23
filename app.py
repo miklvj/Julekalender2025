@@ -43,7 +43,7 @@ def save_data(df: pd.DataFrame):
 Date = list(range(1, 25))
 Øl = ['Øl1', 'Øl2', 'Øl3', 'Øl4']
 Navn = ['Tejl', 'Stein', 'Ems', 'Miks']
-Smag = [1, 2, 3, 4, 5]
+Smag = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 Duft = [1, 2, 3, 4, 5]
 Helhedsoplevelse = [1, 2, 3, 4, 5]
 Booster = [0, 2]
@@ -73,7 +73,7 @@ app.layout = html.Div(
                 html.H1("Øl Julekalender 2025!", style={"margin": 0}),
                 html.P(
                     "Hvem løber med sejren, bliver det en sød julebryg, en hidsig stout, måske en mærkelig sour, eller en skøn IPA. "
-                    "Bliver det noget surt stats som Ems så godt kan lide. Og har Tejl ændret smagsløj. Hvad siger Stein til det hele, "
+                    "Bliver det noget surt stas som Ems så godt kan lide. Og har Tejl ændret smagsløj. Hvad siger Stein til det hele, "
                     "og vinder Mikkels øl med gran - følg med hele December!",
                     style={"marginTop": "5px", "color": "#555"}
                 )
@@ -599,7 +599,7 @@ def update_navn_detail(rows, selected_navn):
     )
 
     fig.update_layout(
-        title=f'Vurderinger for øl connoisseur {selected_navn}',
+        title=f'Vurderinger fra øl connoisseur {selected_navn}',
         template='simple_white',
         margin=dict(t=60, l=40, r=20, b=60),
         legend_title_text=''
