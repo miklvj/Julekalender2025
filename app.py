@@ -5,13 +5,37 @@ Created on Sun Nov 23 13:24:19 2025
 
 @author: mikkel
 """
-
+import os
 import pandas as pd
 import plotly.express as px
 import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash.dash_table as dt
+
+# ---------- File storage settings ----------
+# This will create/use beer_ratings.csv in the same folder as this .py file
+DATA_FILE = os.path.join(os.path.dirname(__file__), "beer_ratings.csv")
+
+COLUMNS = ['Dato', 'Øl', 'Navn', 'Smag', 'Duft', 'Helhedsoplevelse', 'Booster']
+
+def load_data():
+    """Load ratings from CSV, or return empty DataFrame if file does not exist."""
+    if os.path.exists(DATA_FILE):
+        df = pd.read_csv(DATA_FILE)
+        # Make sure all expected columns exist
+        missing = [c for c in COLUMNS if c not in df.columns]
+        for c in missing:
+            df[c] = None
+        return df[COLUMNS]
+    else:
+        # No file yet -> start empty
+        return pd.DataFrame(columns=COLUMNS)
+
+
+def save_data(df: pd.DataFrame):
+    """Save ratings to CSV."""
+    df.to_csv(DATA_FILE, index=False)
 
 # --------- Hardcoded allowed values (choices) ---------
 Date = list(range(1, 25))
@@ -23,7 +47,7 @@ Helhedsoplevelse = [1, 2, 3, 4, 5]
 Booster = [0, 2]
 
 # --------- empty df (for reference / debugging) ---------
-df = pd.DataFrame(columns=['Dato', 'Øl', 'Navn', 'Smag', 'Duft', 'Helhedsoplevelse', 'Booster'])
+initial_df = load_data()
 
 # --------- Build Dash app ---------
 app = dash.Dash(__name__)
@@ -200,8 +224,8 @@ app.layout = html.Div(
                                         {'name': 'Helhedsoplevelse', 'id': 'Helhedsoplevelse'},
                                         {'name': 'Booster', 'id': 'Booster'},
                                     ],
-                                    data=[],
-                                    row_deletable=True,
+                                    data=initial_df.to_dict("records"),
+                                    row_deletable=False,
                                     page_size=10,
                                     style_table={'overflowX': 'auto'},
                                     style_cell={
