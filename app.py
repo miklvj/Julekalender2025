@@ -19,6 +19,7 @@ DATA_FILE = os.path.join(os.path.dirname(__file__), "beer_ratings.csv")
 
 COLUMNS = ['Dato', 'Øl', 'Navn', 'Smag', 'Duft', 'Helhedsoplevelse', 'Booster']
 
+
 def load_data():
     """Load ratings from CSV, or return empty DataFrame if file does not exist."""
     if os.path.exists(DATA_FILE):
@@ -37,6 +38,7 @@ def save_data(df: pd.DataFrame):
     """Save ratings to CSV."""
     df.to_csv(DATA_FILE, index=False)
 
+
 # --------- Hardcoded allowed values (choices) ---------
 Date = list(range(1, 25))
 Øl = ['Øl1', 'Øl2', 'Øl3', 'Øl4']
@@ -46,12 +48,8 @@ Duft = [1, 2, 3, 4, 5]
 Helhedsoplevelse = [1, 2, 3, 4, 5]
 Booster = [0, 2]
 
-# --------- empty df (for reference / debugging) ---------
-initial_df = load_data()
-
 # --------- Build Dash app ---------
 app = dash.Dash(__name__)
-
 server = app.server  # <- this is what PythonAnywhere will use
 
 app.layout = html.Div(
@@ -74,7 +72,9 @@ app.layout = html.Div(
             children=[
                 html.H1("Øl Julekalender 2025!", style={"margin": 0}),
                 html.P(
-                    "Hvem løber med sejren, bliver det en sød julebryg, en hidsig stout, måske en mærkelig sour, eller en skøn IPA. Bliver det noget surt stats som Ems så godt kan lide. Og har Tejl ændret smagsløj. Hvad siger Stein til det hele, og vinder Mikkels øl med gran - følg med hele December!",
+                    "Hvem løber med sejren, bliver det en sød julebryg, en hidsig stout, måske en mærkelig sour, eller en skøn IPA. "
+                    "Bliver det noget surt stats som Ems så godt kan lide. Og har Tejl ændret smagsløj. Hvad siger Stein til det hele, "
+                    "og vinder Mikkels øl med gran - følg med hele December!",
                     style={"marginTop": "5px", "color": "#555"}
                 )
             ]
@@ -224,7 +224,7 @@ app.layout = html.Div(
                                         {'name': 'Helhedsoplevelse', 'id': 'Helhedsoplevelse'},
                                         {'name': 'Booster', 'id': 'Booster'},
                                     ],
-                                    data=initial_df.to_dict("records"),
+                                    data=load_data().to_dict("records"),
                                     row_deletable=False,
                                     page_size=10,
                                     style_table={'overflowX': 'auto'},
@@ -291,6 +291,36 @@ app.layout = html.Div(
                                 dcc.Graph(id='helhedsoplevelse_rating')
                             ]
                         ),
+
+                        # ---- CHART 5: Person details ----
+                        html.Div(
+                            style={
+                                "backgroundColor": "white",
+                                "padding": "20px",
+                                "borderRadius": "10px",
+                                "boxShadow": "0 2px 6px rgba(0,0,0,0.1)"
+                            },
+                            children=[
+                                html.H3("Detaljer for valgt ekspert",
+                                        style={"marginTop": 0, "marginBottom": "10px"}),
+
+                                html.Div(
+                                    style={"maxWidth": "250px", "marginBottom": "10px"},
+                                    children=[
+                                        html.Label("Vælg ekspert",
+                                                   style={"fontWeight": "bold"}),
+                                        dcc.Dropdown(
+                                            id='navn-filter',
+                                            options=[{'label': str(x), 'value': x} for x in Navn],
+                                            placeholder='Vælg ekspert',
+                                            clearable=True
+                                        ),
+                                    ]
+                                ),
+
+                                dcc.Graph(id='navn_detail')
+                            ]
+                        ),
                     ]
                 )
             ]
@@ -334,24 +364,35 @@ def add_row(n_clicks, current_rows, dato,
     rows.append(new_row)
 
     df = pd.DataFrame(rows, columns=COLUMNS)
-    save_data(df)   
+    save_data(df)
 
     return rows
 
-# --- Graph 1: Total rating ---
+
+# --- Graph 1: Total rating (stacked by Navn, ordered by total) ---
 @app.callback(
     Output('samlede_rating', 'figure'),
     Input('table', 'data')
 )
 def update_bar_chart_1(rows):
     if not rows:
-        return px.bar()
+        fig = px.bar()
+        fig.update_layout(template='simple_white',
+                          title='Samlet rating pr. øl')
+        return fig
 
     df = pd.DataFrame(rows)
-    df['TotalScore'] = df[['Smag', 'Duft', 'Helhedsoplevelse', 'Booster']].sum(axis=1)
-    df = df.sort_values('Dato')
 
+    # Compute total score per row
+    df['TotalScore'] = df[['Smag', 'Duft', 'Helhedsoplevelse', 'Booster']].sum(axis=1)
+
+    # Sum total score per øl + navn
     grouped = df.groupby(['Øl', 'Navn'], as_index=False)['TotalScore'].sum()
+
+    # Total per øl for sorting
+    total_per_ol = grouped.groupby('Øl', as_index=False)['TotalScore'].sum()
+    total_per_ol = total_per_ol.sort_values('TotalScore', ascending=False)
+    ol_order = total_per_ol['Øl'].tolist()
 
     fig = px.bar(
         grouped,
@@ -359,29 +400,42 @@ def update_bar_chart_1(rows):
         y='TotalScore',
         color='Navn',
         barmode='stack',
-        labels={'TotalScore': 'Samlet score', 'Øl': 'Øl'}
+        category_orders={'Øl': ol_order},
+        labels={'TotalScore': 'Samlet score', 'Øl': 'Øl', 'Navn': 'Navn'},
+        color_discrete_sequence=px.colors.qualitative.Pastel1
     )
 
     fig.update_layout(
-        title='Samlet rating pr. øl (stacked efter navn)',
-        margin=dict(t=60, l=40, r=20, b=40)
+        title='Samlet rating pr. øl',
+        template='simple_white',
+        margin=dict(t=60, l=40, r=20, b=60),
+        legend_title_text=''
     )
 
     return fig
 
 
-# --- Graph 2: Smag ---
+# --- Graph 2: Smag (stacked by Navn, ordered by total Smag) ---
 @app.callback(
     Output('smag_rating', 'figure'),
     Input('table', 'data')
 )
 def update_bar_chart_2(rows):
     if not rows:
-        return px.bar()
+        fig = px.bar()
+        fig.update_layout(template='simple_white',
+                          title='Smag – samlet pr. øl')
+        return fig
 
     df = pd.DataFrame(rows)
-    df = df.sort_values('Dato')
+
+    # Sum Smag per øl + navn
     grouped = df.groupby(['Øl', 'Navn'], as_index=False)['Smag'].sum()
+
+    # Total Smag per øl for sorting
+    total_smag = grouped.groupby('Øl', as_index=False)['Smag'].sum()
+    total_smag = total_smag.sort_values('Smag', ascending=False)
+    ol_order = total_smag['Øl'].tolist()
 
     fig = px.bar(
         grouped,
@@ -389,29 +443,42 @@ def update_bar_chart_2(rows):
         y='Smag',
         color='Navn',
         barmode='stack',
-        labels={'Smag': 'Smag', 'Øl': 'Øl'}
+        category_orders={'Øl': ol_order},
+        labels={'Smag': 'Smag', 'Øl': 'Øl'},
+        color_discrete_sequence=px.colors.qualitative.Pastel1
     )
 
     fig.update_layout(
-        title='Rating – Smag',
-        margin=dict(t=60, l=40, r=20, b=40)
+        title='Smag – samlet pr. øl',
+        template='simple_white',
+        margin=dict(t=60, l=40, r=20, b=60),
+        legend_title_text=''
     )
 
     return fig
 
 
-# --- Graph 3: Duft ---
+# --- Graph 3: Duft (stacked by Navn, ordered by total Duft) ---
 @app.callback(
     Output('duft_rating', 'figure'),
     Input('table', 'data')
 )
 def update_bar_chart_3(rows):
     if not rows:
-        return px.bar()
+        fig = px.bar()
+        fig.update_layout(template='simple_white',
+                          title='Duft – samlet pr. øl')
+        return fig
 
     df = pd.DataFrame(rows)
-    df = df.sort_values('Dato')
+
+    # Sum Duft per øl + navn
     grouped = df.groupby(['Øl', 'Navn'], as_index=False)['Duft'].sum()
+
+    # Total Duft per øl for sorting
+    total_duft = grouped.groupby('Øl', as_index=False)['Duft'].sum()
+    total_duft = total_duft.sort_values('Duft', ascending=False)
+    ol_order = total_duft['Øl'].tolist()
 
     fig = px.bar(
         grouped,
@@ -419,29 +486,42 @@ def update_bar_chart_3(rows):
         y='Duft',
         color='Navn',
         barmode='stack',
-        labels={'Duft': 'Duft', 'Øl': 'Øl'}
+        category_orders={'Øl': ol_order},
+        labels={'Duft': 'Duft', 'Øl': 'Øl'},
+        color_discrete_sequence=px.colors.qualitative.Pastel1
     )
 
     fig.update_layout(
-        title='Rating – Duft',
-        margin=dict(t=60, l=40, r=20, b=40)
+        title='Duft – samlet pr. øl',
+        template='simple_white',
+        margin=dict(t=60, l=40, r=20, b=60),
+        legend_title_text=''
     )
 
     return fig
 
 
-# --- Graph 4: Helhedsoplevelse ---
+# --- Graph 4: Helhedsoplevelse (stacked by Navn, ordered by total) ---
 @app.callback(
     Output('helhedsoplevelse_rating', 'figure'),
     Input('table', 'data')
 )
 def update_bar_chart_4(rows):
     if not rows:
-        return px.bar()
+        fig = px.bar()
+        fig.update_layout(template='simple_white',
+                          title='Helhedsoplevelse – samlet pr. øl')
+        return fig
 
     df = pd.DataFrame(rows)
-    df = df.sort_values('Dato')
+
+    # Sum Helhedsoplevelse per øl + navn
     grouped = df.groupby(['Øl', 'Navn'], as_index=False)['Helhedsoplevelse'].sum()
+
+    # Total Helhedsoplevelse per øl for sorting
+    total_helhed = grouped.groupby('Øl', as_index=False)['Helhedsoplevelse'].sum()
+    total_helhed = total_helhed.sort_values('Helhedsoplevelse', ascending=False)
+    ol_order = total_helhed['Øl'].tolist()
 
     fig = px.bar(
         grouped,
@@ -449,12 +529,82 @@ def update_bar_chart_4(rows):
         y='Helhedsoplevelse',
         color='Navn',
         barmode='stack',
-        labels={'Helhedsoplevelse': 'Helhedsoplevelse', 'Øl': 'Øl'}
+        category_orders={'Øl': ol_order},
+        labels={'Helhedsoplevelse': 'Helhedsoplevelse', 'Øl': 'Øl'},
+        color_discrete_sequence=px.colors.qualitative.Pastel1
     )
 
     fig.update_layout(
-        title='Rating – Helhedsoplevelse',
-        margin=dict(t=60, l=40, r=20, b=40)
+        title='Helhedsoplevelse – samlet pr. øl',
+        template='simple_white',
+        margin=dict(t=60, l=40, r=20, b=60),
+        legend_title_text=''
+    )
+
+    return fig
+
+
+# --- Graph 5: Detaljer for valgt ekspert ---
+@app.callback(
+    Output('navn_detail', 'figure'),
+    Input('table', 'data'),
+    Input('navn-filter', 'value')
+)
+def update_navn_detail(rows, selected_navn):
+    # No data or no name selected -> empty-ish figure
+    if not rows or selected_navn is None:
+        fig = px.bar()
+        fig.update_layout(
+            template='simple_white',
+            title='Vælg en ekspert for at se detaljer'
+        )
+        return fig
+
+    df = pd.DataFrame(rows)
+
+    # Filter for the chosen name
+    df = df[df['Navn'] == selected_navn]
+
+    if df.empty:
+        fig = px.bar()
+        fig.update_layout(
+            template='simple_white',
+            title=f'Ingen data for {selected_navn}'
+        )
+        return fig
+
+    # Sum components per øl for this person
+    grouped = df.groupby('Øl', as_index=False)[['Smag', 'Duft', 'Helhedsoplevelse', 'Booster']].sum()
+
+    # Total per øl for ordering
+    grouped['Total'] = grouped[['Smag', 'Duft', 'Helhedsoplevelse', 'Booster']].sum(axis=1)
+    grouped = grouped.sort_values('Total', ascending=False)
+    ol_order = grouped['Øl'].tolist()
+
+    # Long format for stacked bar
+    plot_df = grouped.melt(
+        id_vars='Øl',
+        value_vars=['Smag', 'Duft', 'Helhedsoplevelse', 'Booster'],
+        var_name='Kategori',
+        value_name='Score'
+    )
+
+    fig = px.bar(
+        plot_df,
+        x='Øl',
+        y='Score',
+        color='Kategori',
+        barmode='stack',
+        category_orders={'Øl': ol_order},
+        labels={'Score': 'Score', 'Øl': 'Øl', 'Kategori': 'Bidrag'},
+        color_discrete_sequence=px.colors.qualitative.Pastel1
+    )
+
+    fig.update_layout(
+        title=f'Detaljer for {selected_navn}',
+        template='simple_white',
+        margin=dict(t=60, l=40, r=20, b=60),
+        legend_title_text=''
     )
 
     return fig
