@@ -301,18 +301,18 @@ app.layout = html.Div(
                                 "boxShadow": "0 2px 6px rgba(0,0,0,0.1)"
                             },
                             children=[
-                                html.H3("Detaljer for valgt ekspert",
+                                html.H3("Vurderinger fra valgt øl connoisseur",
                                         style={"marginTop": 0, "marginBottom": "10px"}),
 
                                 html.Div(
                                     style={"maxWidth": "250px", "marginBottom": "10px"},
                                     children=[
-                                        html.Label("Vælg ekspert",
+                                        html.Label("Vælg øl connoisseur",
                                                    style={"fontWeight": "bold"}),
                                         dcc.Dropdown(
                                             id='navn-filter',
                                             options=[{'label': str(x), 'value': x} for x in Navn],
-                                            placeholder='Vælg ekspert',
+                                            placeholder='Vælg øl connoisseur',
                                             clearable=True
                                         ),
                                     ]
@@ -378,7 +378,7 @@ def update_bar_chart_1(rows):
     if not rows:
         fig = px.bar()
         fig.update_layout(template='simple_white',
-                          title='Samlet rating pr. øl')
+                          title='Den samlede vurdering')
         return fig
 
     df = pd.DataFrame(rows)
@@ -406,7 +406,7 @@ def update_bar_chart_1(rows):
     )
 
     fig.update_layout(
-        title='Samlet rating pr. øl',
+        title='Den samlede vurdering',
         template='simple_white',
         margin=dict(t=60, l=40, r=20, b=60),
         legend_title_text=''
@@ -424,7 +424,7 @@ def update_bar_chart_2(rows):
     if not rows:
         fig = px.bar()
         fig.update_layout(template='simple_white',
-                          title='Smag – samlet pr. øl')
+                          title='Smags-vurdering')
         return fig
 
     df = pd.DataFrame(rows)
@@ -449,7 +449,7 @@ def update_bar_chart_2(rows):
     )
 
     fig.update_layout(
-        title='Smag – samlet pr. øl',
+        title='Smags-vurdering',
         template='simple_white',
         margin=dict(t=60, l=40, r=20, b=60),
         legend_title_text=''
@@ -467,7 +467,7 @@ def update_bar_chart_3(rows):
     if not rows:
         fig = px.bar()
         fig.update_layout(template='simple_white',
-                          title='Duft – samlet pr. øl')
+                          title='Duft-vurdering')
         return fig
 
     df = pd.DataFrame(rows)
@@ -492,7 +492,7 @@ def update_bar_chart_3(rows):
     )
 
     fig.update_layout(
-        title='Duft – samlet pr. øl',
+        title='Duft-vurdering',
         template='simple_white',
         margin=dict(t=60, l=40, r=20, b=60),
         legend_title_text=''
@@ -510,7 +510,7 @@ def update_bar_chart_4(rows):
     if not rows:
         fig = px.bar()
         fig.update_layout(template='simple_white',
-                          title='Helhedsoplevelse – samlet pr. øl')
+                          title='Helhedsvurdering')
         return fig
 
     df = pd.DataFrame(rows)
@@ -535,7 +535,7 @@ def update_bar_chart_4(rows):
     )
 
     fig.update_layout(
-        title='Helhedsoplevelse – samlet pr. øl',
+        title='Helhedsvurdering',
         template='simple_white',
         margin=dict(t=60, l=40, r=20, b=60),
         legend_title_text=''
@@ -556,7 +556,7 @@ def update_navn_detail(rows, selected_navn):
         fig = px.bar()
         fig.update_layout(
             template='simple_white',
-            title='Vælg en ekspert for at se detaljer'
+            title='Vælg en øl connoisseur'
         )
         return fig
 
@@ -569,7 +569,7 @@ def update_navn_detail(rows, selected_navn):
         fig = px.bar()
         fig.update_layout(
             template='simple_white',
-            title=f'Ingen data for {selected_navn}'
+            title=f'Ingen data for connoisseur {selected_navn}'
         )
         return fig
 
@@ -601,7 +601,7 @@ def update_navn_detail(rows, selected_navn):
     )
 
     fig.update_layout(
-        title=f'Detaljer for {selected_navn}',
+        title=f'Vurderinger for øl connoisseur {selected_navn}',
         template='simple_white',
         margin=dict(t=60, l=40, r=20, b=60),
         legend_title_text=''
