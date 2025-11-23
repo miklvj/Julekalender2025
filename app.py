@@ -336,7 +336,7 @@ def add_row(n_clicks, current_rows, dato,
     df = pd.DataFrame(rows, columns=COLUMNS)
     save_data(df)   
 
-return rows
+    return rows
 
 # --- Graph 1: Total rating ---
 @app.callback(
