@@ -137,7 +137,7 @@ app.layout = html.Div(
                             dcc.Dropdown(
                                 id='smag-input',
                                 options=[{'label': str(x), 'value': x} for x in Smag],
-                                placeholder='Vælg smag (1–5)',
+                                placeholder='Vælg smag (1–10)',
                                 style={"marginBottom": "12px"}
                             ),
                         ]),
