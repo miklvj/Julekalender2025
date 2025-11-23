@@ -73,7 +73,7 @@ app.layout = html.Div(
                 html.H1("Øl Julekalender 2025!", style={"margin": 0}),
                 html.P(
                     "Hvem løber med sejren, bliver det en sød julebryg, en hidsig stout, måske en mærkelig sour, eller en skøn IPA. "
-                    "Bliver det noget surt stas som Ems så godt kan lide. Og har Tejl ændret smagsløj. Hvad siger Stein til det hele, "
+                    "Bliver det noget surt stads som Ems så godt kan lide. Og har Tejl ændret smagsløg. Hvad siger Spicy Stein til det hele, "
                     "og vinder Mikkels øl med gran - følg med hele December!",
                     style={"marginTop": "5px", "color": "#555"}
                 )
@@ -399,7 +399,7 @@ def update_bar_chart_1(rows):
         color='Navn',
         barmode='stack',
         category_orders={'Øl': ol_order},
-        labels={'TotalScore': 'Samlet score', 'Øl': 'Øl', 'Navn': 'Navn'},
+        labels={'TotalScore': 'Samlet vurdering', 'Øl': 'Øl', 'Navn': 'Navn'},
         color_discrete_sequence=px.colors.qualitative.Pastel1
     )
 
@@ -594,7 +594,7 @@ def update_navn_detail(rows, selected_navn):
         color='Kategori',
         barmode='stack',
         category_orders={'Øl': ol_order},
-        labels={'Score': 'Score', 'Øl': 'Øl', 'Kategori': 'Bidrag'},
+        labels={'Score': 'Vurdering', 'Øl': 'Øl', 'Kategori': 'Bidrag'},
         color_discrete_sequence=px.colors.qualitative.Pastel1
     )
 
